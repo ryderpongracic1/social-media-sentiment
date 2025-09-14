@@ -1,0 +1,11 @@
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/bin/Debug/net9.0/SentimentAnalysis.Domain.deps.json
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/bin/Debug/net9.0/SentimentAnalysis.Domain.dll
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/bin/Debug/net9.0/SentimentAnalysis.Domain.pdb
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.AssemblyInfoInputs.cache
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.AssemblyInfo.cs
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.csproj.CoreCompileInputs.cache
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.dll
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/refint/SentimentAnalysis.Domain.dll
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/SentimentAnalysis.Domain.pdb
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/Debug/net9.0/ref/SentimentAnalysis.Domain.dll

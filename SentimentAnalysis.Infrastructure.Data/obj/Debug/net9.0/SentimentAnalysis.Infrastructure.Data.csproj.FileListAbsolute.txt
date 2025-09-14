@@ -1,0 +1,5 @@
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/Debug/net9.0/SentimentAnalysis.Infrastructure.Data.csproj.AssemblyReference.cache
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/Debug/net9.0/SentimentAnalysis.Infrastructure.Data.GeneratedMSBuildEditorConfig.editorconfig
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/Debug/net9.0/SentimentAnalysis.Infrastructure.Data.AssemblyInfoInputs.cache
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/Debug/net9.0/SentimentAnalysis.Infrastructure.Data.AssemblyInfo.cs
+/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/Debug/net9.0/SentimentAnalysis.Infrastructure.Data.csproj.CoreCompileInputs.cache

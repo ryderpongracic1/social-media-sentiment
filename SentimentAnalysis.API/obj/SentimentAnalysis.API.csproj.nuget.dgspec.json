@@ -1,0 +1,285 @@
+{
+  "format": 1,
+  "restore": {
+    "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.API/SentimentAnalysis.API.csproj": {}
+  },
+  "projects": {
+    "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.API/SentimentAnalysis.API.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.API/SentimentAnalysis.API.csproj",
+        "projectName": "SentimentAnalysis.API",
+        "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.API/SentimentAnalysis.API.csproj",
+        "packagesPath": "/Users/ryderpongracic/.nuget/packages/",
+        "outputPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.API/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/ryderpongracic/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj": {
+                "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj"
+              },
+              "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/SentimentAnalysis.Infrastructure.Data.csproj": {
+                "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/SentimentAnalysis.Infrastructure.Data.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Google.Cloud.Functions.Framework": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "Google.Cloud.Functions.Hosting": {
+              "target": "Package",
+              "version": "[3.0.1, )"
+            },
+            "Google.Cloud.SecretManager.V1": {
+              "target": "Package",
+              "version": "[2.6.0, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.AspNetCore.OpenApi": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.ML": {
+              "target": "Package",
+              "version": "[4.0.2, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            },
+            "Reddit": {
+              "target": "Package",
+              "version": "[1.5.2, )"
+            },
+            "StackExchange.Redis": {
+              "target": "Package",
+              "version": "[2.9.17, )"
+            },
+            "Swashbuckle.AspNetCore": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.AspNetCore.App": {
+              "privateAssets": "none"
+            },
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj",
+        "projectName": "SentimentAnalysis.Domain",
+        "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj",
+        "packagesPath": "/Users/ryderpongracic/.nuget/packages/",
+        "outputPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/ryderpongracic/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {}
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    },
+    "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/SentimentAnalysis.Infrastructure.Data.csproj": {
+      "version": "1.0.0",
+      "restore": {
+        "projectUniqueName": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/SentimentAnalysis.Infrastructure.Data.csproj",
+        "projectName": "SentimentAnalysis.Infrastructure.Data",
+        "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/SentimentAnalysis.Infrastructure.Data.csproj",
+        "packagesPath": "/Users/ryderpongracic/.nuget/packages/",
+        "outputPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Infrastructure.Data/obj/",
+        "projectStyle": "PackageReference",
+        "configFilePaths": [
+          "/Users/ryderpongracic/.nuget/NuGet/NuGet.Config"
+        ],
+        "originalTargetFrameworks": [
+          "net9.0"
+        ],
+        "sources": {
+          "https://api.nuget.org/v3/index.json": {}
+        },
+        "frameworks": {
+          "net9.0": {
+            "targetAlias": "net9.0",
+            "projectReferences": {
+              "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj": {
+                "projectPath": "/Users/ryderpongracic/Documents/GitHub/social-media-sentiment/SentimentAnalysis.Domain/SentimentAnalysis.Domain.csproj"
+              }
+            }
+          }
+        },
+        "warningProperties": {
+          "warnAsError": [
+            "NU1605"
+          ]
+        },
+        "restoreAuditProperties": {
+          "enableAudit": "true",
+          "auditLevel": "low",
+          "auditMode": "direct"
+        },
+        "SdkAnalysisLevel": "9.0.300"
+      },
+      "frameworks": {
+        "net9.0": {
+          "targetAlias": "net9.0",
+          "dependencies": {
+            "Microsoft.EntityFrameworkCore": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Design": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.EntityFrameworkCore.Tools": {
+              "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
+              "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Configuration": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.Configuration.Binder": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Microsoft.Extensions.DependencyInjection": {
+              "target": "Package",
+              "version": "[9.0.9, )"
+            },
+            "Npgsql.EntityFrameworkCore.PostgreSQL": {
+              "target": "Package",
+              "version": "[9.0.4, )"
+            }
+          },
+          "imports": [
+            "net461",
+            "net462",
+            "net47",
+            "net471",
+            "net472",
+            "net48",
+            "net481"
+          ],
+          "assetTargetFallback": true,
+          "warn": true,
+          "frameworkReferences": {
+            "Microsoft.NETCore.App": {
+              "privateAssets": "all"
+            }
+          },
+          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/9.0.305/PortableRuntimeIdentifierGraph.json"
+        }
+      }
+    }
+  }
+}
