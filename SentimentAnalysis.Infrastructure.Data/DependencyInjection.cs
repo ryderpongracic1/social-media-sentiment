@@ -14,9 +14,9 @@ public static class DependencyInjection
         var connectionString = configuration.GetConnectionString("DefaultConnection");
         
         // Get database configuration values
-        var maxRetryCount = configuration.GetSection("Database:MaxRetryCount").Get<int?>() ?? 3;
-        var maxRetryDelayString = configuration.GetSection("Database:MaxRetryDelay").Get<string>() ?? "00:00:10";
-        var commandTimeout = configuration.GetSection("Database:CommandTimeout").Get<int?>() ?? 30;
+        var maxRetryCount = int.TryParse(configuration["Database:MaxRetryCount"], out var retryCount) ? retryCount : 3;
+        var maxRetryDelayString = configuration["Database:MaxRetryDelay"] ?? "00:00:10";
+        var commandTimeout = int.TryParse(configuration["Database:CommandTimeout"], out var timeout) ? timeout : 30;
         
         services.AddDbContext<SentimentAnalysisDbContext>(options =>
         {
@@ -32,12 +32,6 @@ public static class DependencyInjection
 
             options.EnableSensitiveDataLogging(false);
             options.EnableDetailedErrors(false);
-        });
-
-        // Add DbContext factory for design-time operations
-        services.AddDbContextFactory<SentimentAnalysisDbContext>(options =>
-        {
-            options.UseNpgsql(connectionString);
         });
 
         return services;

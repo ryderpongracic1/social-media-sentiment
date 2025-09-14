@@ -51,18 +51,6 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
-            "Google.Cloud.Functions.Framework": {
-              "target": "Package",
-              "version": "[3.0.1, )"
-            },
-            "Google.Cloud.Functions.Hosting": {
-              "target": "Package",
-              "version": "[3.0.1, )"
-            },
-            "Google.Cloud.SecretManager.V1": {
-              "target": "Package",
-              "version": "[2.6.0, )"
-            },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
               "version": "[9.0.9, )"
