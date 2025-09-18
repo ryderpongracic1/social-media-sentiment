@@ -36,6 +36,13 @@ This repository contains the comprehensive architectural design for a production
 | **[Microservices Architecture](MICROSERVICES_ARCHITECTURE.md)** | Service boundaries and Cloud Functions design | ✅ Complete |
 | **[Project Structure](PROJECT_STRUCTURE.md)** | Clean architecture and code organization | ✅ Complete |
 
+### Frontend Application
+
+| Document | Description | Status |
+|----------|-------------|---------|
+| **[Frontend Deployment Guide](../sentiment-frontend/DEPLOYMENT.md)** | Complete deployment guide for Next.js frontend | ✅ Complete |
+| **[Frontend README](../sentiment-frontend/README.md)** | Frontend application documentation and setup | ✅ Complete |
+
 ### Infrastructure & Operations
 
 | Document | Description | Status |
@@ -241,12 +248,15 @@ graph TB
 - Terraform >= 1.0 installed
 - .NET 8 SDK installed
 - Docker installed for local development
+- Node.js 18+ for frontend development
 
 ### Quick Start
+
+#### Backend Services
 1. **Clone the repository**
    ```bash
-   git clone <repository-url>
-   cd social-media-sentiment-analysis
+   git clone https://github.com/ryderpongracic1/social-media-sentiment.git
+   cd social-media-sentiment
    ```
 
 2. **Set up GCP infrastructure**
@@ -257,16 +267,60 @@ graph TB
    terraform apply
    ```
 
-3. **Deploy the application**
+3. **Deploy the backend services**
    ```bash
    gcloud builds submit --config=cloudbuild.yaml
    ```
 
-4. **Run tests**
+4. **Run backend tests**
    ```bash
    dotnet test tests/UnitTests/
    dotnet test tests/IntegrationTests/
    ```
+
+#### Frontend Application
+1. **Navigate to frontend directory**
+   ```bash
+   cd sentiment-frontend
+   ```
+
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
+
+3. **Configure environment variables**
+   ```bash
+   cp .env.example .env.local
+   # Edit .env.local with your API endpoints
+   ```
+
+4. **Run development server**
+   ```bash
+   npm run dev
+   ```
+
+5. **Deploy to production** (Choose one option):
+   
+   **Option A: Vercel (Recommended)**
+   ```bash
+   # Connect to Vercel and deploy
+   vercel --prod
+   ```
+   
+   **Option B: Docker**
+   ```bash
+   docker build -t sentiment-frontend .
+   docker run -p 3000:3000 sentiment-frontend
+   ```
+   
+   **Option C: Netlify**
+   ```bash
+   npm run build
+   # Upload .next folder to Netlify
+   ```
+
+For detailed deployment instructions, see the [Frontend Deployment Guide](../sentiment-frontend/DEPLOYMENT.md).
 
 ### Local Development
 See [Project Structure](PROJECT_STRUCTURE.md) for detailed development setup instructions including:
