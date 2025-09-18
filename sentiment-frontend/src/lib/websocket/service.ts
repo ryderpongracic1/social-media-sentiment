@@ -2,7 +2,7 @@ import { io, type Socket } from 'socket.io-client';
 
 class WebSocketService {
   private socket: Socket | null = null;
-  private readonly URL: string = process.env.NEXT_PUBLIC_WEBSOCKET_URL || 'http://localhost:5000';
+  private readonly URL: string = process.env.NEXT_PUBLIC_WS_URL || 'ws://localhost:5142';
 
   public connect(): void {
     if (!this.socket) {

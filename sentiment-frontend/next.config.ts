@@ -81,8 +81,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Output config for deployment
-  output: "standalone",
+  // Output config for deployment - removed standalone for Vercel compatibility
+  // output: "standalone", // Only needed for Docker/self-hosting
 
   // Webpack customization
   webpack: (config, { dev, isServer }) => {
