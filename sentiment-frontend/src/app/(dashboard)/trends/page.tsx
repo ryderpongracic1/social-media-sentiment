@@ -1,4 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { HeatmapChart } from '@/components/charts/HeatmapChart';
+import { RealtimeLineChart } from '@/components/charts/RealtimeLineChart';
+import { WordCloudChart } from '@/components/charts/WordCloudChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { mockWordCloudData, mockSentimentTrendData, mockHeatmapData } from '@/lib/mockData';
 
 export default function TrendAnalysisPage() {
   return (
@@ -8,43 +12,47 @@ export default function TrendAnalysisPage() {
         Identify and analyze emerging trends in social media data.
       </p>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Top Trending Topics</CardTitle>
             <CardDescription>Currently popular topics and keywords.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for trending topics list */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Trending Topics</p>
-            </div>
+            <WordCloudChart
+              data={mockWordCloudData}
+              title="Top Trending Topics"
+              description="Currently popular topics and keywords."
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Trend Velocity</CardTitle>
             <CardDescription>Rate of change in topic popularity.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for trend velocity chart */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Trend Velocity Chart</p>
-            </div>
+            <RealtimeLineChart
+              initialData={mockSentimentTrendData}
+              title="Trend Velocity"
+              description="Rate of change in topic popularity."
+              socketEvent="trendVelocityUpdate"
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Geographic Trends</CardTitle>
             <CardDescription>Regional distribution of trends.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for geographic trends map */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Geographic Trends Map</p>
-            </div>
+            <HeatmapChart
+              data={mockHeatmapData}
+              title="Geographic Trends"
+              description="Regional distribution of trends."
+            />
           </CardContent>
         </Card>
       </div>

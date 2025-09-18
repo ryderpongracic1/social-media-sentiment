@@ -1,10 +1,9 @@
 "use client"
 
-import Link from "next/link"
 import { motion } from "framer-motion"
-import { Bell, UserCircle } from "lucide-react"
+import { Bell, UserCircle, Menu } from "lucide-react"
+import Link from "next/link"
 
-import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import {
   DropdownMenu,
@@ -14,8 +13,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
+import { ModeToggle } from "@/components/ui/theme-toggle"
 
-export function Header() {
+type HeaderProps = {
+  setIsSidebarOpen: (isOpen: boolean) => void;
+}
+
+export function Header({ setIsSidebarOpen }: HeaderProps) {
   return (
     <motion.header
       className="sticky top-0 z-40 w-full border-b bg-background"
@@ -24,10 +28,21 @@ export function Header() {
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
       <div className="container flex h-16 items-center justify-between py-4">
-        <Link href="/" className="text-2xl font-bold">
-          SentimentApp
-        </Link>
+        <div className="flex items-center">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="mr-2 md:hidden"
+            onClick={() => setIsSidebarOpen(true)}
+          >
+            <Menu className="h-6 w-6" />
+          </Button>
+          <Link href="/" className="text-2xl font-bold">
+            SentimentApp
+          </Link>
+        </div>
         <nav className="flex items-center space-x-4">
+          <ModeToggle />
           <Button variant="ghost" size="icon" asChild>
             <motion.div whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
               <Bell className="h-6 w-6" />

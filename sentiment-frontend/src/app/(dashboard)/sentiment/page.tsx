@@ -1,4 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { SentimentBarChart } from '@/components/charts/BarChart';
+import { RealtimeLineChart } from '@/components/charts/RealtimeLineChart';
+import { WordCloudChart } from '@/components/charts/WordCloudChart';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { mockPlatformSentimentData, mockSentimentTrendData, mockWordCloudData } from '@/lib/mockData';
 
 export default function SentimentAnalysisPage() {
   return (
@@ -8,43 +12,47 @@ export default function SentimentAnalysisPage() {
         Analyze sentiment across your social media data.
       </p>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        <Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Overall Sentiment</CardTitle>
             <CardDescription>Distribution of positive, negative, and neutral sentiment.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for sentiment chart */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Sentiment Chart</p>
-            </div>
+            <SentimentBarChart
+              data={mockPlatformSentimentData}
+              title="Sentiment Across Platforms"
+              description="Comparison of sentiment distribution across different social media platforms."
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Sentiment Over Time</CardTitle>
             <CardDescription>How sentiment has evolved over a period.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for time series chart */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Time Series Chart</p>
-            </div>
+            <RealtimeLineChart
+              initialData={mockSentimentTrendData}
+              title="Sentiment Trend Over Time"
+              description="Evolution of overall sentiment, positive, negative, and neutral counts."
+              socketEvent="sentimentTrendUpdate"
+            />
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="col-span-1">
           <CardHeader>
             <CardTitle>Key Phrases</CardTitle>
             <CardDescription>Most impactful phrases driving sentiment.</CardDescription>
           </CardHeader>
           <CardContent>
-            {/* Placeholder for key phrases list */}
-            <div className="h-48 w-full rounded-md bg-muted flex items-center justify-center">
-              <p className="text-muted-foreground">Key Phrases</p>
-            </div>
+            <WordCloudChart
+              data={mockWordCloudData}
+              title="Prominent Keywords"
+              description="Most frequently occurring keywords in social media posts."
+            />
           </CardContent>
         </Card>
       </div>

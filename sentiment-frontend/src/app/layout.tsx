@@ -1,126 +1,94 @@
-import type { Metadata } from "next";
-import { Inter } from "next/font/google";
+"use client";
 
-import { Providers } from "@/providers";
-import { cn } from "@/lib/utils";
+import { AnimatePresence, motion } from "framer-motion";
+import { usePathname } from "next/navigation";
+import { useState } from "react";
+
+import { SkipLink } from "@/components/accessibility/SkipLink";
 import { Header } from "@/components/layout/header";
-import { Sidebar } from "@/components/layout/sidebar";
-import { Home, LineChart, TrendingUp, Settings, Users, Database, Key, BarChart3 } from "lucide-react";
+import { Sidebar, sidebarNavItems } from "@/components/layout/sidebar";
+import { Toaster } from "@/components/ui/toaster";
+import { cn } from "@/lib/utils";
+import { Providers } from "@/providers";
 
 import "./globals.css";
 
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
-});
+import { inter } from "./fonts";
 
-export const metadata: Metadata = {
-  title: "Social Media Sentiment Analysis Platform",
-  description: "Enterprise-grade platform for analyzing sentiment across social media platforms with real-time insights and advanced analytics.",
-  keywords: ["sentiment analysis", "social media", "analytics", "AI", "machine learning"],
-  authors: [{ name: "Social Media Sentiment Analysis Team" }],
-  creator: "Social Media Sentiment Analysis Platform",
-  publisher: "Social Media Sentiment Analysis Platform",
-  formatDetection: {
-    email: false,
-    address: false,
-    telephone: false,
-  },
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"),
-  openGraph: {
-    title: "Social Media Sentiment Analysis Platform",
-    description: "Enterprise-grade platform for analyzing sentiment across social media platforms",
-    type: "website",
-    locale: "en_US",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Social Media Sentiment Analysis Platform",
-    description: "Enterprise-grade platform for analyzing sentiment across social media platforms",
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
-  },
-};
 
-interface RootLayoutProps {
+
+type RootLayoutProps = {
   children: React.ReactNode;
 }
 
 export default function RootLayout({ children }: RootLayoutProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const pathname = usePathname();
+
   return (
     <html lang="en" suppressHydrationWarning>
-      <body
-        className={cn(
-          "min-h-screen bg-background font-sans antialiased",
-          inter.variable
-        )}
-      >
+          <head>
+            <link rel="manifest" href="/manifest.json" />
+            <meta name="theme-color" content="#3b82f6" />
+            <meta name="apple-mobile-web-app-capable" content="yes" />
+            <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+            <meta name="apple-mobile-web-app-title" content="Sentiment Analysis" />
+            <link rel="apple-touch-icon" href="/icon-192x192.png" />
+          </head>
+          <body
+            className={cn(
+              "min-h-screen bg-background font-sans antialiased",
+              inter.variable
+            )}
+          >
         <Providers>
+          <SkipLink href="#main-content">Skip to main content</SkipLink>
+          <SkipLink href="#navigation">Skip to navigation</SkipLink>
           <div className="flex min-h-screen flex-col">
-            <Header />
+            <Header setIsSidebarOpen={setIsSidebarOpen} />
             <div className="container flex-1 items-start md:grid md:grid-cols-[220px_1fr] md:gap-6 lg:grid-cols-[240px_1fr] lg:gap-10">
-              <aside className="fixed top-14 z-30 -ml-2 hidden h-[calc(100vh-3.5rem)] w-full shrink-0 overflow-y-auto border-r md:sticky md:block">
+              <nav id="navigation" role="navigation" aria-label="Main navigation">
                 <Sidebar
-                  items={[
-                    {
-                      href: "/dashboard",
-                      title: "Dashboard",
-                      icon: Home,
-                    },
-                    {
-                      href: "/sentiment",
-                      title: "Sentiment Analysis",
-                      icon: LineChart,
-                    },
-                    {
-                      href: "/trends",
-                      title: "Trend Analysis",
-                      icon: TrendingUp,
-                    },
-                    {
-                      href: "/data-sources",
-                      title: "Data Sources",
-                      icon: Database,
-                    },
-                    {
-                      href: "/users",
-                      title: "User Management",
-                      icon: Users,
-                    },
-                    {
-                      href: "/settings",
-                      title: "System Settings",
-                      icon: Settings,
-                    },
-                    {
-                      href: "/api-keys",
-                      title: "API Keys",
-                      icon: Key,
-                    },
-                    {
-                      href: "/reports",
-                      title: "Analytics Reports",
-                      icon: BarChart3,
-                    },
-                  ]}
+                  items={sidebarNavItems}
+                  isOpen={isSidebarOpen}
+                  setIsOpen={setIsSidebarOpen}
                 />
-              </aside>
-              <main className="flex w-full flex-col overflow-hidden py-6">
-                {children}
+              </nav>
+              <main id="main-content" className="flex w-full flex-col overflow-hidden py-6" role="main" aria-label="Main content">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={pathname}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                    className="h-full w-full"
+                  >
+                    {children}
+                  </motion.div>
+                </AnimatePresence>
               </main>
             </div>
           </div>
         </Providers>
+        <Toaster />
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              if ('serviceWorker' in navigator) {
+                window.addEventListener('load', function() {
+                  navigator.serviceWorker.register('/sw.js')
+                    .then(function(registration) {
+                      console.log('SW registered: ', registration);
+                    })
+                    .catch(function(registrationError) {
+                      console.log('SW registration failed: ', registrationError);
+                    });
+                });
+              }
+            `,
+          }}
+        />
       </body>
     </html>
   );
