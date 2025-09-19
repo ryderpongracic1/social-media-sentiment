@@ -81,8 +81,8 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Output config for deployment - removed standalone for Vercel compatibility
-  // output: "standalone", // Only needed for Docker/self-hosting
+  // Output config for deployment
+  ...(process.env.AZURE_DEPLOYMENT === 'true' && { output: 'standalone' }),
 
   // Webpack customization
   webpack: (config, { dev, isServer }) => {

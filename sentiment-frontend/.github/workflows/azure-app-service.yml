@@ -1,0 +1,105 @@
+name: Azure App Service CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sentiment-frontend/**'
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: 'sentiment-frontend-app'
+  AZURE_WEBAPP_PACKAGE_PATH: 'sentiment-frontend'
+  NODE_VERSION: '18.x'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+          cache-dependency-path: sentiment-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd sentiment-frontend
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd sentiment-frontend
+          npm run test -- --coverage --watchAll=false
+
+      - name: Run linting
+        run: |
+          cd sentiment-frontend
+          npm run lint
+
+      - name: Build application
+        run: |
+          cd sentiment-frontend
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.AZURE_API_URL }}
+          NEXT_PUBLIC_WS_URL: ${{ secrets.AZURE_WS_URL }}
+          NEXT_PUBLIC_APP_ENV: production
+
+      - name: Create deployment package
+        run: |
+          cd sentiment-frontend
+          # Copy necessary files for standalone deployment
+          mkdir -p deploy
+          cp -r .next/standalone/* deploy/
+          cp -r .next/static deploy/.next/static
+          cp -r public deploy/public
+          cp web.config deploy/
+          cp package.json deploy/
+          
+          # Create zip package
+          cd deploy
+          zip -r ../deployment.zip .
+
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-app
+          path: sentiment-frontend/deployment.zip
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+
+    steps:
+      - name: Download artifact from build job
+        uses: actions/download-artifact@v4
+        with:
+          name: node-app
+
+      - name: Unzip artifact for deployment
+        run: |
+          unzip deployment.zip
+          rm deployment.zip
+
+      - name: Deploy to Azure Web App
+        id: deploy-to-webapp
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+          package: .
+
+      - name: Restart Azure Web App
+        uses: azure/CLI@v1
+        with:
+          azcliversion: 2.30.0
+          inlineScript: |
+            az webapp restart --name ${{ env.AZURE_WEBAPP_NAME }} --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }}

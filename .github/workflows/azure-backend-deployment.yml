@@ -1,0 +1,250 @@
+name: Deploy .NET Backend to Azure App Service
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'SentimentAnalysis.API/**'
+      - 'SentimentAnalysis.Domain/**'
+      - 'SentimentAnalysis.Infrastructure.Data/**'
+      - '.github/workflows/azure-backend-deployment.yml'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'SentimentAnalysis.API/**'
+      - 'SentimentAnalysis.Domain/**'
+      - 'SentimentAnalysis.Infrastructure.Data/**'
+  workflow_dispatch:
+
+env:
+  AZURE_WEBAPP_NAME: sentiment-analysis-api
+  AZURE_WEBAPP_PACKAGE_PATH: './SentimentAnalysis.API'
+  DOTNET_VERSION: '9.0.x'
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Cache NuGet packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.nuget/packages
+        key: ${{ runner.os }}-nuget-${{ hashFiles('**/*.csproj') }}
+        restore-keys: |
+          ${{ runner.os }}-nuget-
+          
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build solution
+      run: dotnet build --configuration Release --no-restore
+      
+    - name: Run tests
+      run: dotnet test --configuration Release --no-build --verbosity normal --collect:"XPlat Code Coverage"
+      
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: test-results
+        path: '**/TestResults/**/*.xml'
+        
+    - name: Upload code coverage
+      uses: codecov/codecov-action@v4
+      if: always()
+      with:
+        files: '**/TestResults/**/coverage.cobertura.xml'
+        fail_ci_if_error: false
+
+  security-scan:
+    runs-on: ubuntu-latest
+    needs: build-and-test
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Install security scanning tools
+      run: |
+        dotnet tool install --global security-scan
+        dotnet tool install --global dotnet-outdated-tool
+        
+    - name: Run security scan
+      run: security-scan --project SentimentAnalysis.API/SentimentAnalysis.API.csproj
+      continue-on-error: true
+      
+    - name: Check for outdated packages
+      run: dotnet outdated --upgrade
+      continue-on-error: true
+
+  deploy-staging:
+    runs-on: ubuntu-latest
+    needs: [build-and-test, security-scan]
+    if: github.ref == 'refs/heads/main'
+    environment: staging
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build and publish
+      run: |
+        dotnet publish ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SentimentAnalysis.API.csproj \
+          --configuration Release \
+          --output ./publish \
+          --self-contained false \
+          --runtime linux-x64
+          
+    - name: Create deployment package
+      run: |
+        cd ./publish
+        zip -r ../deployment.zip .
+        
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-package-staging
+        path: deployment.zip
+        
+    - name: Deploy to Azure App Service (Staging)
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}-staging
+        slot-name: staging
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE_STAGING }}
+        package: deployment.zip
+        
+    - name: Run database migrations (Staging)
+      run: |
+        dotnet tool install --global dotnet-ef
+        dotnet ef database update --project SentimentAnalysis.Infrastructure.Data --startup-project SentimentAnalysis.API --connection "${{ secrets.STAGING_DATABASE_CONNECTION_STRING }}"
+      env:
+        ASPNETCORE_ENVIRONMENT: Staging
+        
+    - name: Health check (Staging)
+      run: |
+        sleep 30
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net/health || exit 1
+        
+    - name: Run smoke tests (Staging)
+      run: |
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net/ || exit 1
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}-staging.azurewebsites.net/health || exit 1
+
+  deploy-production:
+    runs-on: ubuntu-latest
+    needs: deploy-staging
+    if: github.ref == 'refs/heads/main'
+    environment: production
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build and publish
+      run: |
+        dotnet publish ${{ env.AZURE_WEBAPP_PACKAGE_PATH }}/SentimentAnalysis.API.csproj \
+          --configuration Release \
+          --output ./publish \
+          --self-contained false \
+          --runtime linux-x64
+          
+    - name: Create deployment package
+      run: |
+        cd ./publish
+        zip -r ../deployment.zip .
+        
+    - name: Upload deployment artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: deployment-package-production
+        path: deployment.zip
+        
+    - name: Deploy to Azure App Service (Production)
+      uses: azure/webapps-deploy@v3
+      with:
+        app-name: ${{ env.AZURE_WEBAPP_NAME }}
+        publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        package: deployment.zip
+        
+    - name: Run database migrations (Production)
+      run: |
+        dotnet tool install --global dotnet-ef
+        dotnet ef database update --project SentimentAnalysis.Infrastructure.Data --startup-project SentimentAnalysis.API --connection "${{ secrets.PRODUCTION_DATABASE_CONNECTION_STRING }}"
+      env:
+        ASPNETCORE_ENVIRONMENT: Production
+        
+    - name: Health check (Production)
+      run: |
+        sleep 30
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health || exit 1
+        
+    - name: Run smoke tests (Production)
+      run: |
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/ || exit 1
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health || exit 1
+        
+    - name: Notify deployment success
+      if: success()
+      run: |
+        echo "✅ Production deployment successful!"
+        echo "🌐 Application URL: https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net"
+        
+    - name: Notify deployment failure
+      if: failure()
+      run: |
+        echo "❌ Production deployment failed!"
+        echo "Please check the logs and rollback if necessary."
+
+  rollback:
+    runs-on: ubuntu-latest
+    if: failure() && github.ref == 'refs/heads/main'
+    needs: deploy-production
+    environment: production
+    
+    steps:
+    - name: Rollback deployment
+      uses: azure/CLI@v2
+      with:
+        azcliversion: 2.30.0
+        inlineScript: |
+          az webapp deployment slot swap \
+            --resource-group ${{ secrets.AZURE_RESOURCE_GROUP }} \
+            --name ${{ env.AZURE_WEBAPP_NAME }} \
+            --slot staging \
+            --target-slot production
+            
+    - name: Verify rollback
+      run: |
+        sleep 30
+        curl -f https://${{ env.AZURE_WEBAPP_NAME }}.azurewebsites.net/health || exit 1

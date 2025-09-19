@@ -188,6 +188,60 @@ NEXT_PUBLIC_WS_URL=wss://api.yourcompany.com
 
 ## Platform-Specific Guides
 
+### Azure Deployment (Recommended Alternative to Vercel)
+
+Azure offers multiple deployment options for Next.js applications. For detailed instructions, see our comprehensive [Azure Deployment Guide](./docs/AZURE_DEPLOYMENT_GUIDE.md).
+
+#### Quick Start - Azure Static Web Apps (Recommended)
+
+Azure Static Web Apps is the recommended Azure service for Next.js applications, offering similar benefits to Vercel with global CDN, automatic SSL, and seamless GitHub integration.
+
+**Prerequisites:**
+- Azure subscription
+- GitHub repository
+
+**Steps:**
+1. **Create Azure Static Web App:**
+   ```bash
+   az staticwebapp create \
+     --name sentiment-frontend-swa \
+     --resource-group sentiment-analysis-rg \
+     --source https://github.com/yourusername/your-repo \
+     --location eastus \
+     --branch main \
+     --app-location "sentiment-frontend" \
+     --output-location "out"
+   ```
+
+2. **Configure GitHub Secrets:**
+   - `AZURE_STATIC_WEB_APPS_API_TOKEN`: From Azure Portal
+   - `AZURE_API_URL`: Your backend API URL
+   - `AZURE_WS_URL`: Your WebSocket URL
+
+3. **Deploy:** Push to main branch triggers automatic deployment
+
+**Azure Environment Variables:**
+```env
+# Azure Static Web Apps
+NEXT_PUBLIC_API_URL=https://your-backend.azurewebsites.net/api
+NEXT_PUBLIC_WS_URL=wss://your-backend.azurewebsites.net
+NEXT_PUBLIC_APP_ENV=production
+```
+
+#### Alternative Azure Options
+
+**Azure App Service:**
+- Traditional web hosting with full server control
+- Better for applications requiring server-side processing
+- Costs: ~$13/month (Basic tier)
+
+**Azure Container Instances:**
+- Containerized deployment with Docker
+- Pay-per-use pricing model
+- Best for microservices architecture
+
+For complete setup instructions, troubleshooting, and cost comparisons, see the [Azure Deployment Guide](./docs/AZURE_DEPLOYMENT_GUIDE.md).
+
 ### Netlify Deployment
 
 1. **Build settings:**
@@ -228,9 +282,11 @@ builder.Services.AddCors(options =>
     options.AddDefaultPolicy(policy =>
     {
         policy.WithOrigins(
-            "http://localhost:3000",           // Local development
-            "https://your-app.vercel.app",     // Production frontend
-            "https://your-custom-domain.com"   // Custom domain
+            "http://localhost:3000",                    // Local development
+            "https://your-app.vercel.app",              // Vercel deployment
+            "https://your-swa.azurestaticapps.net",     // Azure Static Web Apps
+            "https://your-app.azurewebsites.net",       // Azure App Service
+            "https://your-custom-domain.com"            // Custom domain
         )
         .AllowAnyMethod()
         .AllowAnyHeader()
@@ -270,6 +326,42 @@ builder.Services.AddCors(options =>
 - Add frontend domain to backend CORS policy
 - Verify backend CORS middleware is properly configured
 - Check if credentials are required
+
+#### 5. Azure Static Web Apps Issues
+**Symptoms:** 404 errors on direct URL access, routing problems
+**Solutions:**
+- Verify `staticwebapp.config.json` is properly configured
+- Check `navigationFallback` settings in the config file
+- Ensure build output location is set to `out` in GitHub Actions
+- Verify GitHub Actions workflow is using correct app location path
+- Check deployment logs in Azure Portal
+
+#### 6. Azure App Service Startup Issues
+**Symptoms:** Deployment succeeds but app doesn't start, 500 errors
+**Solutions:**
+- Ensure `web.config` is present in the deployment package
+- Verify `AZURE_DEPLOYMENT=true` environment variable is set
+- Check Node.js version matches (`WEBSITE_NODE_DEFAULT_VERSION=18.17.0`)
+- Verify standalone build output is being used
+- Check application logs: `az webapp log tail --name your-app-name --resource-group your-rg`
+
+#### 7. Azure Container Registry Authentication
+**Symptoms:** Cannot push/pull Docker images, authentication failures
+**Solutions:**
+- Verify ACR credentials are correctly set in GitHub secrets
+- Check service principal permissions for the resource group
+- Login to ACR locally: `az acr login --name your-registry`
+- Test image pull locally before deployment
+- Ensure registry admin user is enabled
+
+#### 8. Azure Environment Variable Issues
+**Symptoms:** Azure-specific environment variables not working
+**Solutions:**
+- For Static Web Apps: Use `az staticwebapp appsettings set` command
+- For App Service: Use `az webapp config appsettings set` command
+- Verify variables are set in the correct environment (production/staging)
+- Check Azure Portal configuration matches your expectations
+- Restart the service after setting new variables
 
 ### Debugging Steps
 

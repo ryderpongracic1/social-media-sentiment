@@ -1,0 +1,87 @@
+name: Azure Static Web Apps CI/CD
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+    paths:
+      - 'sentiment-frontend/**'
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+    paths:
+      - 'sentiment-frontend/**'
+
+jobs:
+  build_and_deploy_job:
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
+    runs-on: ubuntu-latest
+    name: Build and Deploy Job
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: true
+          lfs: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: sentiment-frontend/package-lock.json
+
+      - name: Install dependencies
+        run: |
+          cd sentiment-frontend
+          npm ci
+
+      - name: Run tests
+        run: |
+          cd sentiment-frontend
+          npm run test -- --coverage --watchAll=false
+
+      - name: Run linting
+        run: |
+          cd sentiment-frontend
+          npm run lint
+
+      - name: Build application
+        run: |
+          cd sentiment-frontend
+          npm run build
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.AZURE_API_URL }}
+          NEXT_PUBLIC_WS_URL: ${{ secrets.AZURE_WS_URL }}
+          NEXT_PUBLIC_APP_ENV: production
+
+      - name: Build And Deploy
+        id: builddeploy
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          action: "upload"
+          app_location: "sentiment-frontend"
+          api_location: ""
+          output_location: "out"
+          app_build_command: "npm run build"
+          api_build_command: ""
+        env:
+          NEXT_PUBLIC_API_URL: ${{ secrets.AZURE_API_URL }}
+          NEXT_PUBLIC_WS_URL: ${{ secrets.AZURE_WS_URL }}
+          NEXT_PUBLIC_APP_ENV: production
+
+  close_pull_request_job:
+    if: github.event_name == 'pull_request' && github.event.action == 'closed'
+    runs-on: ubuntu-latest
+    name: Close Pull Request Job
+    steps:
+      - name: Close Pull Request
+        id: closepullrequest
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN }}
+          action: "close"
+          app_location: "sentiment-frontend"

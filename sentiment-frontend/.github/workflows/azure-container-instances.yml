@@ -1,0 +1,112 @@
+name: Azure Container Instances CI/CD
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'sentiment-frontend/**'
+  workflow_dispatch:
+
+env:
+  REGISTRY_NAME: 'sentimentfrontendregistry'
+  IMAGE_NAME: 'sentiment-frontend'
+  RESOURCE_GROUP: 'sentiment-analysis-rg'
+  CONTAINER_GROUP_NAME: 'sentiment-frontend-container'
+  LOCATION: 'eastus'
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Azure Container Registry
+        uses: azure/docker-login@v1
+        with:
+          login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./sentiment-frontend
+          file: ./sentiment-frontend/Dockerfile
+          push: true
+          tags: |
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:latest
+            ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          build-args: |
+            NEXT_PUBLIC_API_URL=${{ secrets.AZURE_API_URL }}
+            NEXT_PUBLIC_WS_URL=${{ secrets.AZURE_WS_URL }}
+            NEXT_PUBLIC_APP_ENV=production
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Log in to Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Deploy to Azure Container Instances
+        uses: azure/aci-deploy@v1
+        with:
+          resource-group: ${{ env.RESOURCE_GROUP }}
+          dns-name-label: sentiment-frontend-${{ github.run_number }}
+          image: ${{ env.REGISTRY_NAME }}.azurecr.io/${{ env.IMAGE_NAME }}:${{ github.sha }}
+          registry-login-server: ${{ env.REGISTRY_NAME }}.azurecr.io
+          registry-username: ${{ secrets.ACR_USERNAME }}
+          registry-password: ${{ secrets.ACR_PASSWORD }}
+          name: ${{ env.CONTAINER_GROUP_NAME }}
+          location: ${{ env.LOCATION }}
+          cpu: 1
+          memory: 1.5
+          ports: 3000
+          environment-variables: |
+            NEXT_PUBLIC_API_URL=${{ secrets.AZURE_API_URL }}
+            NEXT_PUBLIC_WS_URL=${{ secrets.AZURE_WS_URL }}
+            NEXT_PUBLIC_APP_ENV=production
+            NODE_ENV=production
+
+      - name: Get container instance details
+        run: |
+          az container show \
+            --resource-group ${{ env.RESOURCE_GROUP }} \
+            --name ${{ env.CONTAINER_GROUP_NAME }} \
+            --query "{FQDN:ipAddress.fqdn,ProvisioningState:provisioningState}" \
+            --output table
+
+  cleanup-old-images:
+    runs-on: ubuntu-latest
+    needs: build-and-deploy
+    if: success()
+    
+    steps:
+      - name: Log in to Azure CLI
+        uses: azure/login@v1
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+
+      - name: Clean up old container registry images
+        run: |
+          # Keep only the latest 5 images
+          az acr repository show-tags \
+            --name ${{ env.REGISTRY_NAME }} \
+            --repository ${{ env.IMAGE_NAME }} \
+            --orderby time_desc \
+            --output tsv | tail -n +6 | \
+          while read tag; do
+            if [ "$tag" != "latest" ]; then
+              echo "Deleting tag: $tag"
+              az acr repository delete \
+                --name ${{ env.REGISTRY_NAME }} \
+                --image ${{ env.IMAGE_NAME }}:$tag \
+                --yes
+            fi
+          done
