@@ -4,6 +4,14 @@
 
 This document provides a comprehensive summary of all backend deployment resources, configurations, and procedures for deploying the Social Media Sentiment Analysis .NET 9 API to Azure App Service.
 
+> ⚠️ **Critical for Deployment Success**: Deployment failures are commonly caused by missing Azure secrets and environment variables. Before deploying, ensure you have completed the configuration using these specialized guides:
+
+## 🔐 Essential Configuration Guides
+
+- **[Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md)** - Complete setup for service principals, Key Vault, and GitHub secrets
+- **[Environment Variables Reference](./ENVIRONMENT_VARIABLES.md)** - Comprehensive list of all required and optional environment variables
+- **[Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step validation checklist to prevent deployment failures
+
 ## 📁 Deployment Files Created
 
 ### Configuration Files
@@ -22,7 +30,10 @@ This document provides a comprehensive summary of all backend deployment resourc
 
 ### Documentation
 - **[`docs/AZURE_BACKEND_DEPLOYMENT_GUIDE.md`](./AZURE_BACKEND_DEPLOYMENT_GUIDE.md)** - Comprehensive deployment guide (500+ lines)
-- **[`docs/BACKEND_DEPLOYMENT_CHECKLIST.md`](./BACKEND_DEPLOYMENT_CHECKLIST.md)** - Step-by-step deployment checklist (300+ items)
+- **[`docs/AZURE_SECRETS_CONFIGURATION.md`](./AZURE_SECRETS_CONFIGURATION.md)** - Complete Azure secrets setup guide (670+ lines)
+- **[`docs/ENVIRONMENT_VARIABLES.md`](./ENVIRONMENT_VARIABLES.md)** - Environment variables reference (560+ lines)
+- **[`docs/DEPLOYMENT_CHECKLIST.md`](./DEPLOYMENT_CHECKLIST.md)** - Secrets-focused deployment checklist (580+ lines)
+- **[`docs/BACKEND_DEPLOYMENT_CHECKLIST.md`](./BACKEND_DEPLOYMENT_CHECKLIST.md)** - General deployment checklist (300+ items)
 - **[`docs/BACKEND_TROUBLESHOOTING_GUIDE.md`](./BACKEND_TROUBLESHOOTING_GUIDE.md)** - Detailed troubleshooting guide (500+ lines)
 
 ## 🚀 Quick Start Deployment
@@ -70,9 +81,23 @@ az webapp config appsettings set \
 ```
 
 ### 3. Deploy Using GitHub Actions
-1. Configure GitHub secrets (see [deployment guide](./AZURE_BACKEND_DEPLOYMENT_GUIDE.md#github-repository-setup))
-2. Push code to main branch
-3. Monitor deployment in GitHub Actions tab
+
+> ⚠️ **Critical Step**: Ensure all GitHub secrets are configured before deployment. Missing secrets are the #1 cause of deployment failures.
+
+1. **Configure GitHub secrets** (see [Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md#github-repository-secrets-configuration))
+   - Service principal secrets: `AZUREAPPSERVICE_CLIENTID_*`, `AZUREAPPSERVICE_TENANTID_*`, `AZUREAPPSERVICE_SUBSCRIPTIONID_*`
+   - App Service publish profile: `AZURE_WEBAPP_PUBLISH_PROFILE`
+   - Database connection strings: `PRODUCTION_DATABASE_CONNECTION_STRING`, `STAGING_DATABASE_CONNECTION_STRING`
+
+2. **Validate configuration**:
+   ```bash
+   # Run validation scripts before deployment
+   ./scripts/validate-all-secrets.sh
+   ./scripts/validate-environment-variables.sh production
+   ```
+
+3. Push code to main branch
+4. Monitor deployment in GitHub Actions tab
 
 ### 4. Run Database Migrations
 ```bash
@@ -160,12 +185,30 @@ The automated deployment pipeline includes:
    - Slot swapping for quick recovery
 
 ### Required GitHub Secrets
-```
+
+> 📖 **Complete Setup Instructions**: See [Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md#github-repository-secrets-configuration)
+
+**Critical Missing Secrets** (commonly cause deployment failures):
+```bash
+# Azure Service Principal Secrets (replace with your actual IDs)
+AZUREAPPSERVICE_CLIENTID_095E79DAF422426BB581EE59C2DEBD5E
+AZUREAPPSERVICE_TENANTID_01B9CCDC9F884BD0BECAE75A6BBF3ADF
+AZUREAPPSERVICE_SUBSCRIPTIONID_EEE389FCBB0C48E28B1F4F6DCE0AF130
+
+# App Service Deployment Secrets
 AZURE_WEBAPP_PUBLISH_PROFILE
 AZURE_WEBAPP_PUBLISH_PROFILE_STAGING
+
+# Database and Resource Configuration
 AZURE_RESOURCE_GROUP
 STAGING_DATABASE_CONNECTION_STRING
 PRODUCTION_DATABASE_CONNECTION_STRING
+```
+
+**Validation**:
+```bash
+# Validate all GitHub secrets are configured
+gh secret list | grep -E "(AZUREAPPSERVICE|AZURE_WEBAPP|DATABASE_CONNECTION)"
 ```
 
 ## 🐳 Container Deployment
@@ -214,11 +257,22 @@ docker-compose up -d
 
 ## 🚨 Troubleshooting
 
-### Common Issues
-1. **502 Bad Gateway** - Check application logs and environment variables
-2. **Database Connection Errors** - Verify connection string and firewall rules
-3. **CORS Errors** - Confirm frontend domain configuration
-4. **Performance Issues** - Review Application Insights and consider scaling
+### Common Deployment Failures
+
+> 🔧 **Detailed Troubleshooting**: See [Backend Troubleshooting Guide](./BACKEND_TROUBLESHOOTING_GUIDE.md) and [Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md#troubleshooting)
+
+1. **Missing Azure Secrets** - Service principal authentication failures, GitHub Actions deployment errors
+   - **Solution**: Complete [Azure Secrets Configuration](./AZURE_SECRETS_CONFIGURATION.md)
+   - **Validation**: Run `./scripts/validate-all-secrets.sh`
+
+2. **Environment Variables Issues** - App starts but returns 500 errors, database/API connection failures
+   - **Solution**: Review [Environment Variables Reference](./ENVIRONMENT_VARIABLES.md)
+   - **Validation**: Run `./scripts/validate-environment-variables.sh production`
+
+3. **502 Bad Gateway** - Check application logs and environment variables
+4. **Database Connection Errors** - Verify connection string and firewall rules
+5. **CORS Errors** - Confirm frontend domain configuration
+6. **Performance Issues** - Review Application Insights and consider scaling
 
 ### Quick Diagnostics
 ```bash

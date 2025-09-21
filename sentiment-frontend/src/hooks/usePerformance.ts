@@ -3,7 +3,7 @@
 import { useCallback, useMemo, useRef, useState, useEffect } from "react";
 
 // Hook for debouncing expensive operations
-export const useDebounce = <T extends (...args: any[]) => any>(
+export const useDebounce = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
@@ -14,14 +14,16 @@ export const useDebounce = <T extends (...args: any[]) => any>(
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current);
       }
-      timeoutRef.current = setTimeout(() => callback(...args), delay);
+      timeoutRef.current = setTimeout(() => {
+        return callback(...args);
+      }, delay);
     }) as T,
     [callback, delay]
   );
 };
 
 // Hook for throttling expensive operations
-export const useThrottle = <T extends (...args: any[]) => any>(
+export const useThrottle = <T extends (...args: unknown[]) => unknown>(
   callback: T,
   delay: number
 ): T => {
@@ -30,8 +32,9 @@ export const useThrottle = <T extends (...args: any[]) => any>(
   return useCallback(
     ((...args: Parameters<T>) => {
       if (Date.now() - lastRun.current >= delay) {
-        callback(...args);
+        const result = callback(...args);
         lastRun.current = Date.now();
+        return result;
       }
     }) as T,
     [callback, delay]
@@ -53,7 +56,8 @@ export const useExpensiveCalculation = <T>(
     }
     
     return result;
-  }, dependencies);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [calculation, ...dependencies]);
 };
 
 // Hook for intersection observer (lazy loading)

@@ -11,7 +11,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     permissions:
       contents: read #This is required for actions/checkout
 
@@ -21,22 +21,45 @@ jobs:
       - name: Set up .NET Core
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.x'
+          dotnet-version: '8.0.x'
+
+      - name: Debug - List project structure
+        run: |
+          echo "=== Project Structure ==="
+          find . -name "*.csproj" -type f
+          echo "=== Current Directory ==="
+          pwd
+          ls -la
+
+      - name: Restore dependencies
+        run: dotnet restore SentimentAnalysis.API/SentimentAnalysis.API.csproj
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build SentimentAnalysis.API/SentimentAnalysis.API.csproj --configuration Release --no-restore
+
+      - name: Debug - Verify build output
+        run: |
+          echo "=== Build Output Directory ==="
+          ls -la SentimentAnalysis.API/bin/Release/net8.0/
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o "${{env.DOTNET_ROOT}}/myapp"
+        run: dotnet publish SentimentAnalysis.API/SentimentAnalysis.API.csproj -c Release -o ./publish --no-build
+
+      - name: Debug - Verify publish output
+        run: |
+          echo "=== Publish Output Directory ==="
+          ls -la ./publish/
+          echo "=== Publish Directory Size ==="
+          du -sh ./publish/
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
         with:
           name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
+          path: ./publish
 
   deploy:
-    runs-on: windows-latest
+    runs-on: ubuntu-latest
     needs: build
     permissions:
       id-token: write #This is required for requesting the JWT
@@ -47,6 +70,40 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./publish
+
+      - name: Debug - Verify downloaded artifact
+        run: |
+          echo "=== Downloaded Artifact Contents ==="
+          ls -la ./publish/
+          echo "=== Artifact Size ==="
+          du -sh ./publish/
+
+      - name: Validate environment variables
+        run: |
+          echo "=== Environment Variable Validation ==="
+          if [ -z "${{ secrets.AZUREAPPSERVICE_CLIENTID_095E79DAF422426BB581EE59C2DEBD5E }}" ]; then
+            echo "ERROR: AZUREAPPSERVICE_CLIENTID is not set"
+            exit 1
+          else
+            echo "✓ AZUREAPPSERVICE_CLIENTID is set"
+          fi
+          
+          if [ -z "${{ secrets.AZUREAPPSERVICE_TENANTID_01B9CCDC9F884BD0BECAE75A6BBF3ADF }}" ]; then
+            echo "ERROR: AZUREAPPSERVICE_TENANTID is not set"
+            exit 1
+          else
+            echo "✓ AZUREAPPSERVICE_TENANTID is set"
+          fi
+          
+          if [ -z "${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_EEE389FCBB0C48E28B1F4F6DCE0AF130 }}" ]; then
+            echo "ERROR: AZUREAPPSERVICE_SUBSCRIPTIONID is not set"
+            exit 1
+          else
+            echo "✓ AZUREAPPSERVICE_SUBSCRIPTIONID is set"
+          fi
+          
+          echo "All required environment variables are present"
       
       - name: Login to Azure
         uses: azure/login@v2
@@ -61,5 +118,15 @@ jobs:
         with:
           app-name: 'sentiment-analysis-api-1'
           slot-name: 'Production'
-          package: .
-          
+          package: ./publish
+
+      - name: Debug - Deployment result
+        run: |
+          echo "=== Deployment Status ==="
+          echo "Deployment completed with status: ${{ steps.deploy-to-webapp.outcome }}"
+          if [ "${{ steps.deploy-to-webapp.outcome }}" = "success" ]; then
+            echo "✓ Deployment successful"
+          else
+            echo "✗ Deployment failed"
+            exit 1
+          fi

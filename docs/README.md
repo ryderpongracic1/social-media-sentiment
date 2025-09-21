@@ -53,6 +53,19 @@ This repository contains the comprehensive architectural design for a production
 | **[Security & Authentication](SECURITY_AUTHENTICATION.md)** | OAuth 2.0, RBAC, and security controls | ✅ Complete |
 | **[CI/CD & Infrastructure](CICD_INFRASTRUCTURE.md)** | DevOps pipelines and Infrastructure as Code | ✅ Complete |
 
+### Azure Deployment Documentation
+
+> 🔐 **Critical for Deployment Success**: The following guides address common deployment failures caused by missing Azure secrets and environment variables.
+
+| Document | Description | Status |
+|----------|-------------|---------|
+| **[🔐 Azure Secrets Configuration](AZURE_SECRETS_CONFIGURATION.md)** | Complete setup for service principals, Key Vault, and GitHub secrets | ✅ Complete |
+| **[⚙️ Environment Variables Reference](ENVIRONMENT_VARIABLES.md)** | Comprehensive list of all required and optional environment variables | ✅ Complete |
+| **[✅ Deployment Checklist](DEPLOYMENT_CHECKLIST.md)** | Step-by-step validation checklist to prevent deployment failures | ✅ Complete |
+| **[🚀 Azure Backend Deployment Guide](AZURE_BACKEND_DEPLOYMENT_GUIDE.md)** | Complete Azure App Service deployment guide | ✅ Complete |
+| **[📋 Backend Deployment Summary](BACKEND_DEPLOYMENT_SUMMARY.md)** | Quick reference for Azure deployment resources and procedures | ✅ Complete |
+| **[🔧 Backend Troubleshooting Guide](BACKEND_TROUBLESHOOTING_GUIDE.md)** | Detailed troubleshooting for Azure deployment issues | ✅ Complete |
+
 ## 🏗️ Architecture Summary
 
 ### System Architecture Overview

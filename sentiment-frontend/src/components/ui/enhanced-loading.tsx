@@ -107,7 +107,7 @@ export const ChartLoading = ({ title }: { title?: string }) => (
 
 export const DataTableLoading = () => (
   <div className="space-y-3">
-    {[...Array(5)].map((_, i) => (
+    {Array.from({ length: 5 }).map((_, i) => (
       <motion.div
         key={i}
         initial={{ opacity: 0, x: -20 }}
@@ -142,7 +142,7 @@ export const TrendLoading = () => (
 
 export const PostsLoading = () => (
   <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-    {[...Array(6)].map((_, i) => (
+    {Array.from({ length: 6 }).map((_, i) => (
       <motion.div
         key={i}
         initial={{ opacity: 0, scale: 0.9 }}

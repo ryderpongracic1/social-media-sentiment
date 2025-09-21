@@ -55,7 +55,7 @@ export default function PostsPage() {
         description: "Social media posts loaded successfully.",
       });
     }
-  }, [isError, error, toast]);
+  }, [isError, error, toast, isLoading, data, currentPage]);
 
   const handleLoadMore = useCallback(() => {
     if (currentPage < totalPages && !isLoading) {

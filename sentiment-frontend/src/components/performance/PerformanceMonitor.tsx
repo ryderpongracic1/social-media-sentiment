@@ -26,11 +26,20 @@ export const PerformanceMonitor = () => {
             metrics.lcp = entry.startTime;
             break;
           case "first-input":
-            metrics.fid = (entry as any).processingStart - entry.startTime;
+            // Type assertion for first-input entry
+            const firstInputEntry = entry as PerformanceEventTiming;
+            if ('processingStart' in firstInputEntry) {
+              metrics.fid = firstInputEntry.processingStart - entry.startTime;
+            }
             break;
           case "layout-shift":
-            if (!(entry as any).hadRecentInput) {
-              metrics.cls = (metrics.cls || 0) + (entry as any).value;
+            // Type assertion for layout-shift entry
+            const layoutShiftEntry = entry as PerformanceEntry & {
+              hadRecentInput?: boolean;
+              value?: number;
+            };
+            if (!layoutShiftEntry.hadRecentInput && layoutShiftEntry.value !== undefined) {
+              metrics.cls = (metrics.cls || 0) + layoutShiftEntry.value;
             }
             break;
           case "navigation":
@@ -49,7 +58,7 @@ export const PerformanceMonitor = () => {
     // Observe different performance entry types
     try {
       observer.observe({ entryTypes: ["paint", "largest-contentful-paint", "first-input", "layout-shift", "navigation"] });
-    } catch (e) {
+    } catch {
       // Fallback for browsers that don't support all entry types
       observer.observe({ entryTypes: ["paint", "navigation"] });
     }
@@ -57,13 +66,19 @@ export const PerformanceMonitor = () => {
     return () => {
       observer.disconnect();
     };
+    
   }, []);
 
   return null; // This component doesn't render anything
 };
 
 // Web Vitals reporting function
-export const reportWebVitals = (metric: any) => {
+export const reportWebVitals = (metric: {
+  name: string;
+  value: number;
+  id: string;
+  delta: number;
+}) => {
   if (process.env.NODE_ENV === "production") {
     // Send to analytics service
     console.log("Web Vital:", metric);

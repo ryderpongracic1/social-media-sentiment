@@ -6,7 +6,7 @@ export type Platform = "reddit" | "twitter" | "facebook" | "instagram" | "linked
 export type TimeWindow = "1h" | "6h" | "24h" | "7d" | "30d" | "90d";
 
 // API Response types
-export type ApiResponse<T = any> = {
+export type ApiResponse<T = unknown> = {
   success: boolean;
   data?: T;
   error?: string;
@@ -66,7 +66,7 @@ export type SocialMediaPost = {
   url?: string;
   timestamp: string;
   status: PostStatus;
-  metadata: Record<string, any>;
+  metadata: Record<string, unknown>;
   createdAt: string;
   updatedAt: string;
 }
@@ -256,7 +256,7 @@ export type AnalyticsState = {
 // Event types
 export type AppEvent = {
   type: string;
-  payload?: any;
+  payload?: unknown;
   timestamp: string;
 }
 

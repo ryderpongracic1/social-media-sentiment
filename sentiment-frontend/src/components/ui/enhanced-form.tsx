@@ -2,7 +2,7 @@
 
 import { motion, AnimatePresence } from "framer-motion";
 import { Check, X, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -38,7 +38,7 @@ export const EnhancedInput = ({
   const [isValid, setIsValid] = useState<boolean | null>(null);
   const [isFocused, setIsFocused] = useState(false);
 
-  const validateInput = (inputValue: string) => {
+  const validateInput = useCallback((inputValue: string) => {
     if (!validation) return null;
 
     if (validation.required && !inputValue.trim()) {
@@ -62,7 +62,7 @@ export const EnhancedInput = ({
     }
 
     return null;
-  };
+  }, [validation]);
 
   useEffect(() => {
     if (value) {
@@ -73,7 +73,7 @@ export const EnhancedInput = ({
       setError(null);
       setIsValid(null);
     }
-  }, [value, validation]);
+  }, [value, validateInput]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange(e.target.value);

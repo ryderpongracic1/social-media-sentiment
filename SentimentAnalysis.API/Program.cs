@@ -26,8 +26,9 @@ if (!string.IsNullOrEmpty(appInsightsConnectionString))
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<SentimentAnalysisDbContext>("database");
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+// Add Swagger/OpenAPI for .NET 8.0 compatibility
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
 
 // Configure CORS based on environment
 builder.Services.AddCors(options =>
@@ -124,7 +125,8 @@ var app = builder.Build();
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
-    app.MapOpenApi();
+    app.UseSwagger();
+    app.UseSwaggerUI();
     app.UseDeveloperExceptionPage();
 }
 

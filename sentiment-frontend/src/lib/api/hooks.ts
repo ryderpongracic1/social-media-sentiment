@@ -14,6 +14,8 @@ import type {
   DashboardResponse,
   TriggerIngestionRequest,
   IngestionStatusResponse,
+  PaginatedResponse,
+  SocialMediaPost,
 } from '../../types/api';
 
 import { authEndpoints, sentimentEndpoints, trendEndpoints, analyticsEndpoints, ingestionEndpoints } from './endpoints';
@@ -24,7 +26,7 @@ export const useLogin = () => {
   return useMutation<AuthResponse, Error, LoginCredentials>({
     mutationFn: async (credentials) => {
       const response = await authEndpoints.login(credentials);
-      return response.data;
+      return response.data as AuthResponse;
     },
     onSuccess: (data) => {
       login(data.accessToken, data.refreshToken, data.user);
@@ -51,7 +53,7 @@ export const useUserProfile = () => {
     queryKey: ['userProfile'],
     queryFn: async () => {
       const response = await authEndpoints.profile();
-      return response.data;
+      return response.data as User;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -62,7 +64,7 @@ export const useAnalyzeSentiment = () => {
   return useMutation<AnalyzeSentimentResponse, Error, AnalyzeSentimentRequest>({
     mutationFn: async (data) => {
       const response = await sentimentEndpoints.analyze(data);
-      return response.data;
+      return response.data as AnalyzeSentimentResponse;
     },
   });
 };
@@ -72,18 +74,18 @@ export const useRecentSentiments = () => {
     queryKey: ['recentSentiments'],
     queryFn: async () => {
       const response = await sentimentEndpoints.getRecentSentiments();
-      return response.data;
+      return response.data as AnalyzeSentimentResponse[];
     },
     refetchInterval: 30 * 1000, // Refetch every 30 seconds
   });
 };
 
 export const useSentimentTrends = (timeWindow: TimeWindow) => {
-  return useQuery<any, Error>({ // TODO: Define specific type for sentiment trends
+  return useQuery<RealtimeTrendsResponse, Error>({
     queryKey: ['sentimentTrends', timeWindow],
     queryFn: async () => {
       const response = await sentimentEndpoints.getSentimentTrends(timeWindow);
-      return response.data;
+      return response.data as RealtimeTrendsResponse;
     },
     staleTime: 1 * 60 * 1000, // 1 minute
   });
@@ -95,7 +97,7 @@ export const useRealtimeTrends = (timeWindow: TimeWindow) => {
     queryKey: ['realtimeTrends', timeWindow],
     queryFn: async () => {
       const response = await trendEndpoints.getTrends(timeWindow);
-      return response.data;
+      return response.data as RealtimeTrendsResponse;
     },
     refetchInterval: 15 * 1000, // Refetch every 15 seconds for real-time
   });
@@ -106,7 +108,7 @@ export const useHistoricalTrends = (keyword: string, startDate: string, endDate:
     queryKey: ['historicalTrends', keyword, startDate, endDate, granularity],
     queryFn: async () => {
       const response = await trendEndpoints.getHistoricalTrends(keyword, startDate, endDate, granularity);
-      return response.data;
+      return response.data as HistoricalTrendsResponse;
     },
     enabled: !!keyword && !!startDate && !!endDate && !!granularity, // Only fetch if all parameters are available
   });
@@ -118,7 +120,7 @@ export const useDashboardAnalytics = (timeRange: string) => {
     queryKey: ['dashboardAnalytics', timeRange],
     queryFn: async () => {
       const response = await analyticsEndpoints.getDashboardAnalytics(timeRange);
-      return response.data;
+      return response.data as DashboardResponse;
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
@@ -126,10 +128,10 @@ export const useDashboardAnalytics = (timeRange: string) => {
 
 // --- Ingestion Hooks ---
 export const useTriggerIngestion = () => {
-  return useMutation<any, Error, TriggerIngestionRequest>({ // TODO: Define specific response type
+  return useMutation<{ success: boolean; message: string }, Error, TriggerIngestionRequest>({
     mutationFn: async (data) => {
       const response = await ingestionEndpoints.triggerIngestion(data);
-      return response.data;
+      return response.data as { success: boolean; message: string };
     },
   });
 };
@@ -139,7 +141,7 @@ export const useIngestionStatus = () => {
     queryKey: ['ingestionStatus'],
     queryFn: async () => {
       const response = await ingestionEndpoints.getIngestionStatus();
-      return response.data;
+      return response.data as IngestionStatusResponse;
     },
     refetchInterval: 10 * 1000, // Refetch every 10 seconds
   });
@@ -153,33 +155,33 @@ export const useSocialMediaPosts = (
   platform?: string,
   query?: string
 ) => {
-  return useQuery<any, Error>({ // TODO: Define specific type for social media posts
+  return useQuery<PaginatedResponse<SocialMediaPost>, Error>({
     queryKey: ['socialMediaPosts', page, pageSize, fromDate, toDate, sentimentType, platform, query],
     queryFn: async () => {
       const params = new URLSearchParams();
       params.append('page', page.toString());
       params.append('pageSize', pageSize.toString());
       if (fromDate) {
-params.append('fromDate', fromDate);
-}
+        params.append('fromDate', fromDate);
+      }
       if (toDate) {
-params.append('toDate', toDate);
-}
+        params.append('toDate', toDate);
+      }
       if (sentimentType) {
-params.append('sentimentType', sentimentType);
-}
+        params.append('sentimentType', sentimentType);
+      }
       if (platform) {
-params.append('platform', platform);
-}
+        params.append('platform', platform);
+      }
       if (query) {
-params.append('query', query);
-}
+        params.append('query', query);
+      }
 
       const response = await fetch(`/api/social-media-posts?${params.toString()}`);
       if (!response.ok) {
         throw new Error('Network response was not ok');
       }
-      return response.json();
+      return response.json() as Promise<PaginatedResponse<SocialMediaPost>>;
     },
     refetchInterval: 60 * 1000, // Refetch every minute
   });

@@ -1,11 +1,15 @@
-import type { TriggerIngestionRequest } from '../../types/api';
+import type {
+  TriggerIngestionRequest,
+  LoginCredentials,
+  AnalyzeSentimentRequest
+} from '../../types/api';
 
 import apiClient from './client';
 
 // Authentication Endpoints
 export const authEndpoints = {
-  login: (credentials: any) => apiClient.post('/auth/login', credentials),
-  register: (userData: any) => apiClient.post('/auth/register', userData),
+  login: (credentials: LoginCredentials) => apiClient.post('/auth/login', credentials),
+  register: (userData: { name: string; email: string; password: string }) => apiClient.post('/auth/register', userData),
   profile: () => apiClient.get('/auth/profile'),
   refreshToken: (refreshToken: string) => apiClient.post('/auth/refresh', { refreshToken }),
   logout: () => apiClient.post('/auth/logout'),
@@ -13,7 +17,7 @@ export const authEndpoints = {
 
 // Sentiment Analysis Endpoints
 export const sentimentEndpoints = {
-  analyze: (data: any) => apiClient.post('/sentiment/analyze', data),
+  analyze: (data: AnalyzeSentimentRequest) => apiClient.post('/sentiment/analyze', data),
   getSentimentById: (id: string) => apiClient.get(`/sentiment/${id}`),
   getRecentSentiments: () => apiClient.get('/sentiment/recent'),
   getSentimentTrends: (timeWindow: string) => apiClient.get(`/sentiment/trends?timeWindow=${timeWindow}`),

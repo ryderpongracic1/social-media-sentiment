@@ -4,6 +4,16 @@
 
 This comprehensive guide covers deploying the Social Media Sentiment Analysis .NET 9 backend API to Microsoft Azure App Service, including database setup, environment configuration, and automated deployment.
 
+> ⚠️ **Important**: Before proceeding with deployment, ensure you have completed the secrets and environment variables configuration. Deployment failures are commonly caused by missing or incorrectly configured secrets.
+
+## Quick Reference Documentation
+
+For detailed configuration of critical deployment components, refer to these specialized guides:
+
+- **[🔐 Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md)** - Complete setup for service principals, Key Vault, and GitHub secrets
+- **[⚙️ Environment Variables Reference](./ENVIRONMENT_VARIABLES.md)** - Comprehensive list of all required and optional environment variables
+- **[✅ Deployment Checklist](./DEPLOYMENT_CHECKLIST.md)** - Step-by-step validation checklist to prevent deployment failures
+
 ## Table of Contents
 
 1. [Prerequisites](#prerequisites)
@@ -197,6 +207,10 @@ chmod +x migrate-database.sh
 
 ## Environment Variables
 
+> 📖 **Complete Reference**: For a comprehensive list of all environment variables, validation scripts, and environment-specific configurations, see the [Environment Variables Reference](./ENVIRONMENT_VARIABLES.md).
+
+> ⚠️ **Critical for Deployment Success**: Missing or incorrectly configured environment variables are the primary cause of deployment failures. Use the validation checklist before deploying.
+
 ### Required Environment Variables
 
 Configure the following environment variables in your Azure App Service:
@@ -327,18 +341,38 @@ az webapp deployment source config-zip \
 
 ### Step 1: Set Up GitHub Secrets
 
+> 📖 **Detailed Instructions**: For comprehensive GitHub secrets setup, including service principal configuration and troubleshooting, see the [Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md#github-repository-secrets-configuration).
+
+**Critical Missing Secrets** (commonly cause deployment failures):
+
 Add the following secrets to your GitHub repository:
 
 1. Go to your GitHub repository
 2. Navigate to Settings → Secrets and variables → Actions
-3. Add these secrets:
+3. Add these **required** secrets:
 
-```
+```bash
+# Azure Service Principal Secrets (replace IDs with your actual values)
+AZUREAPPSERVICE_CLIENTID_095E79DAF422426BB581EE59C2DEBD5E: [Your service principal client ID]
+AZUREAPPSERVICE_TENANTID_01B9CCDC9F884BD0BECAE75A6BBF3ADF: [Your Azure tenant ID]
+AZUREAPPSERVICE_SUBSCRIPTIONID_EEE389FCBB0C48E28B1F4F6DCE0AF130: [Your Azure subscription ID]
+
+# App Service Deployment Secrets
 AZURE_WEBAPP_PUBLISH_PROFILE: [Download from Azure Portal → App Service → Get publish profile]
 AZURE_WEBAPP_PUBLISH_PROFILE_STAGING: [Download staging slot publish profile]
+
+# Database Connection Secrets
 AZURE_RESOURCE_GROUP: sentiment-analysis-rg
 STAGING_DATABASE_CONNECTION_STRING: [Staging database connection string]
 PRODUCTION_DATABASE_CONNECTION_STRING: [Production database connection string]
+```
+
+**Validation Script**:
+```bash
+# Download and run the GitHub secrets validation script
+curl -o validate-github-secrets.sh https://raw.githubusercontent.com/your-repo/scripts/validate-github-secrets.sh
+chmod +x validate-github-secrets.sh
+./validate-github-secrets.sh
 ```
 
 ### Step 2: Configure Deployment Slots
@@ -468,9 +502,47 @@ az monitor metrics alert create \
 
 ## Troubleshooting
 
-### Common Issues
+> 🔧 **Comprehensive Troubleshooting**: For detailed troubleshooting of secrets, environment variables, and deployment issues, see the [Backend Troubleshooting Guide](./BACKEND_TROUBLESHOOTING_GUIDE.md).
 
-#### 1. Application Won't Start
+### Common Deployment Failures
+
+#### 1. Missing or Invalid Secrets
+
+**Symptoms**:
+- GitHub Actions deployment fails with authentication errors
+- "AADSTS70002: Error validating credentials" messages
+- Service principal authentication failures
+
+**Quick Diagnosis**:
+```bash
+# Validate all secrets configuration
+./scripts/validate-all-secrets.sh
+
+# Check specific GitHub secrets
+gh secret list | grep AZUREAPPSERVICE
+```
+
+**Solutions**: See [Azure Secrets Configuration Guide](./AZURE_SECRETS_CONFIGURATION.md#troubleshooting)
+
+#### 2. Environment Variables Issues
+
+**Symptoms**:
+- Application starts but returns 500 errors
+- Database connection failures
+- External API integration failures
+
+**Quick Diagnosis**:
+```bash
+# Validate environment variables
+./scripts/validate-environment-variables.sh production
+
+# Check Key Vault references
+az webapp config appsettings list --name sentiment-analysis-api --resource-group sentiment-analysis-rg | grep KeyVault
+```
+
+**Solutions**: See [Environment Variables Reference](./ENVIRONMENT_VARIABLES.md#troubleshooting)
+
+#### 3. Application Won't Start
 
 **Symptoms**: 502 Bad Gateway or application not responding
 
@@ -612,29 +684,74 @@ az webapp config appsettings set \
 
 ## Deployment Checklist
 
-### Pre-Deployment
-- [ ] Azure resources created (App Service, Database, Application Insights)
-- [ ] Environment variables configured
-- [ ] Database migrations ready
-- [ ] GitHub secrets configured
-- [ ] SSL certificates ready (if using custom domain)
+> 📋 **Complete Deployment Checklist**: For a comprehensive, step-by-step deployment validation checklist that prevents common deployment failures, see the [Deployment Checklist](./DEPLOYMENT_CHECKLIST.md).
 
-### Deployment
+### Quick Pre-Deployment Validation
+
+**Critical Secrets and Configuration** (run these validation commands):
+
+```bash
+# 1. Validate Azure secrets configuration
+curl -o validate-secrets.sh https://raw.githubusercontent.com/your-repo/scripts/validate-all-secrets.sh
+chmod +x validate-secrets.sh
+./validate-secrets.sh
+
+# 2. Validate environment variables
+curl -o validate-env-vars.sh https://raw.githubusercontent.com/your-repo/scripts/validate-environment-variables.sh
+chmod +x validate-env-vars.sh
+./validate-env-vars.sh production
+
+# 3. Validate GitHub secrets
+gh secret list | grep -E "(AZUREAPPSERVICE|AZURE_WEBAPP|DATABASE_CONNECTION)"
+```
+
+### Essential Pre-Deployment Checklist
+
+- [ ] **Azure Secrets Configured**
+  - [ ] Service principal created with correct permissions
+  - [ ] Key Vault created and accessible
+  - [ ] All required secrets stored in Key Vault
+  - [ ] App Service managed identity configured
+
+- [ ] **GitHub Secrets Configured**
+  - [ ] `AZUREAPPSERVICE_CLIENTID_*` configured
+  - [ ] `AZUREAPPSERVICE_TENANTID_*` configured
+  - [ ] `AZUREAPPSERVICE_SUBSCRIPTIONID_*` configured
+  - [ ] `AZURE_WEBAPP_PUBLISH_PROFILE` configured
+  - [ ] Database connection strings configured
+
+- [ ] **Environment Variables Configured**
+  - [ ] All required variables set (see [Environment Variables Reference](./ENVIRONMENT_VARIABLES.md))
+  - [ ] Key Vault references working
+  - [ ] Database connection tested
+  - [ ] External API keys configured
+
+- [ ] **Azure Resources Ready**
+  - [ ] App Service created and configured
+  - [ ] Database server accessible
+  - [ ] Application Insights configured
+  - [ ] Firewall rules configured
+
+### Deployment Execution
+
 - [ ] Code pushed to main branch
 - [ ] GitHub Actions workflow completed successfully
 - [ ] Database migrations applied
 - [ ] Health checks passing
 - [ ] Smoke tests completed
 
-### Post-Deployment
+### Post-Deployment Verification
+
 - [ ] Application accessible via HTTPS
 - [ ] API endpoints responding correctly
 - [ ] Frontend can communicate with backend
+- [ ] External API integrations working
 - [ ] Monitoring and logging configured
 - [ ] Alerts set up
 - [ ] Performance baseline established
 
 ### Production Readiness
+
 - [ ] Auto-scaling configured
 - [ ] Backup strategy implemented
 - [ ] Disaster recovery plan in place

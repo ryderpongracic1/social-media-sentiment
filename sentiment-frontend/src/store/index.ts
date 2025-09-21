@@ -46,8 +46,8 @@ export const useAuthStore = create<AuthStore>()(
               throw new Error("Login failed");
             }
 
-            const { user } = await response.json();
-            set({ user, isAuthenticated: true, isLoading: false });
+            const responseData = await response.json() as { user: User };
+            set({ user: responseData.user, isAuthenticated: true, isLoading: false });
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : "Login failed",
@@ -75,8 +75,8 @@ export const useAuthStore = create<AuthStore>()(
               throw new Error("Registration failed");
             }
 
-            const { user } = await response.json();
-            set({ user, isAuthenticated: true, isLoading: false });
+            const responseData = await response.json() as { user: User };
+            set({ user: responseData.user, isAuthenticated: true, isLoading: false });
           } catch (error) {
             set({
               error: error instanceof Error ? error.message : "Registration failed",
@@ -143,7 +143,7 @@ export const usePostsStore = create<PostsStore>()(
             ...Object.fromEntries(
               Object.entries(filters).map(([key, value]) => [
                 key,
-                Array.isArray(value) ? value.join(",") : String(value),
+                Array.isArray(value) ? value.join(",") : (value != null && (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') ? String(value) : ""),
               ])
             ),
           });
@@ -154,7 +154,7 @@ export const usePostsStore = create<PostsStore>()(
             throw new Error("Failed to fetch posts");
           }
 
-          const data = await response.json();
+          const data = await response.json() as { posts: SocialMediaPost[]; total: number };
           set({
             posts: data.posts,
             pagination: { ...get().pagination, total: data.total },
@@ -226,7 +226,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
             throw new Error("Failed to fetch dashboard stats");
           }
 
-          const stats: DashboardStats = await response.json();
+          const stats = await response.json() as DashboardStats;
           set({ dashboardStats: stats, isLoading: false });
         } catch (error) {
           set({
@@ -246,7 +246,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
             throw new Error("Failed to fetch sentiment trends");
           }
 
-          const trends: SentimentChartData = await response.json();
+          const trends = await response.json() as SentimentChartData;
           set({ sentimentTrends: trends, isLoading: false });
         } catch (error) {
           set({
@@ -266,7 +266,7 @@ export const useAnalyticsStore = create<AnalyticsStore>()(
             throw new Error("Failed to fetch trend analysis");
           }
 
-          const analysis: TrendAnalysis[] = await response.json();
+          const analysis = await response.json() as TrendAnalysis[];
           set({ trendAnalysis: analysis, isLoading: false });
         } catch (error) {
           set({

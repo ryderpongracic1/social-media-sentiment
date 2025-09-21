@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 
-export async function GET() {
+export function GET() {
   try {
     return NextResponse.json(
       {
@@ -12,7 +12,7 @@ export async function GET() {
       },
       { status: 200 }
     );
-  } catch (error) {
+  } catch {
     return NextResponse.json(
       {
         status: 'unhealthy',
@@ -24,6 +24,6 @@ export async function GET() {
   }
 }
 
-export async function HEAD() {
+export function HEAD() {
   return new Response(null, { status: 200 });
 }

@@ -35,7 +35,7 @@ return text;
 /**
  * Debounce function
  */
-export function debounce<T extends (...args: any[]) => any>(
+export function debounce<T extends (...args: unknown[]) => unknown>(
   func: T,
   wait: number
 ): (...args: Parameters<T>) => void {
@@ -63,19 +63,19 @@ export function generateId(): string {
 /**
  * Check if a value is empty (null, undefined, empty string, empty array, empty object)
  */
-export function isEmpty(value: any): boolean {
+export function isEmpty(value: unknown): boolean {
   if (value == null) {
-return true;
-}
+    return true;
+  }
   if (typeof value === "string") {
-return value.trim() === "";
-}
+    return value.trim() === "";
+  }
   if (Array.isArray(value)) {
-return value.length === 0;
-}
+    return value.length === 0;
+  }
   if (typeof value === "object") {
-return Object.keys(value).length === 0;
-}
+    return Object.keys(value).length === 0;
+  }
   return false;
 }
 
@@ -133,5 +133,5 @@ export function camelToKebab(str: string): string {
  * Convert kebab-case to camelCase
  */
 export function kebabToCamel(str: string): string {
-  return str.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
+  return str.replace(/-([a-z])/g, (_, letter: string) => letter.toUpperCase());
 }

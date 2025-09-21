@@ -16,7 +16,7 @@ class WebSocketService {
         console.log('Disconnected from WebSocket server');
       });
 
-      this.socket.on('error', (error: any) => {
+      this.socket.on('error', (error: Error) => {
         console.error('WebSocket error:', error);
       });
     }
@@ -29,19 +29,19 @@ class WebSocketService {
     }
   }
 
-  public on(event: string, callback: (...args: any[]) => void): void {
+  public on<T = unknown>(event: string, callback: (data: T) => void): void {
     if (this.socket) {
       this.socket.on(event, callback);
     }
   }
 
-  public off(event: string, callback?: (...args: any[]) => void): void {
+  public off<T = unknown>(event: string, callback?: (data: T) => void): void {
     if (this.socket) {
       this.socket.off(event, callback);
     }
   }
 
-  public emit(event: string, data: any): void {
+  public emit(event: string, data: unknown): void {
     if (this.socket) {
       this.socket.emit(event, data);
     }

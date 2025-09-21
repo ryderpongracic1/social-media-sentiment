@@ -21,8 +21,8 @@ apiClient.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
+  (error: unknown) => {
+    return Promise.reject(error instanceof Error ? error : new Error(String(error)));
   }
 );
 
@@ -31,12 +31,22 @@ apiClient.interceptors.response.use(
   (response) => {
     return response;
   },
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: unknown) => {
+    // Type guard for axios error
+    if (!error || typeof error !== 'object' || !('config' in error)) {
+      return Promise.reject(error instanceof Error ? error : new Error(String(error)));
+    }
+
+    const axiosError = error as {
+      config: { _retry?: boolean; headers: { Authorization?: string } };
+      response?: { status: number };
+    };
+
+    const originalRequest = axiosError.config;
     const authStore = useAuthStore.getState();
 
     // If the error is 401 Unauthorized and it's not a retry, attempt to refresh the token
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (axiosError.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
         const refreshToken = authStore.refreshToken;
@@ -54,7 +64,7 @@ apiClient.interceptors.response.use(
         // Optionally redirect to login page
       }
     }
-    return Promise.reject(error);
+    return Promise.reject(error instanceof Error ? error : new Error(error && typeof error === 'object' && 'message' in error ? String(error.message) : 'Unknown error'));
   }
 );
 
