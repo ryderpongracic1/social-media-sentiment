@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     environment: production
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,20 +35,17 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './sentiment-frontend/package-lock.json'
           
-      - name: Install dependencies
+      - name: Install dependencies and build
         run: |
           cd sentiment-frontend
-          npm ci
-          
-      - name: Build application
-        run: |
-          cd sentiment-frontend
+          npm ci --prefer-offline --no-audit
           npm run build
         env:
           NODE_ENV: production
           NEXT_PUBLIC_API_URL: https://sentiment-analysis-api-1.azurewebsites.net
+          CI: true
           
-      - name: Build And Deploy
+      - name: Deploy to Azure Static Web Apps
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
@@ -58,7 +55,8 @@ jobs:
           app_location: "./sentiment-frontend"
           api_location: "" # No API for static web apps
           output_location: ".next"
-          skip_app_build: true # We already built it
+          skip_app_build: true # We already built it above
+          production_branch: "main"
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
