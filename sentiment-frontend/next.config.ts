@@ -1,73 +1,30 @@
 import type { NextConfig } from "next";
 
+// Check if we're building for Azure Static Web Apps
+const isAzureStaticWebApps = process.env.NODE_ENV === 'production';
+
 const nextConfig: NextConfig = {
-  // Performance optimizations
-  experimental: {
-    optimizePackageImports: [
-      "lucide-react",
-      "@radix-ui/react-icons",
-      "@tremor/react",
-      "framer-motion",
-      "recharts"
-    ],
-    scrollRestoration: true,
-  },
-
-  // Turbopack configuration
-  turbopack: {
-    rules: {
-      "*.svg": {
-        loaders: ["@svgr/webpack"],
-        as: "*.js",
-      },
-    },
-  },
-
-  // Bundle analyzer for production builds
-  bundlePagesRouterDependencies: true,
-
-  // Image optimization
+  // Static export configuration for Azure Static Web Apps
+  output: isAzureStaticWebApps ? 'export' : undefined,
+  
+  // Disable features incompatible with static export
+  trailingSlash: true,
+  
+  // Image optimization for static export
   images: {
+    unoptimized: isAzureStaticWebApps,
     formats: ["image/webp", "image/avif"],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60 * 60 * 24 * 30, // 30 days
-    dangerouslyAllowSVG: true,
-    contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    ...(isAzureStaticWebApps && {
+      loader: 'custom',
+      loaderFile: './src/lib/imageLoader.ts'
+    })
   },
 
-  // Compression
-  compress: true,
-
-  // Security headers
-  async headers() {
-    return [
-      {
-        source: "/(.*)",
-        headers: [
-          {
-            key: "X-Frame-Options",
-            value: "DENY",
-          },
-          {
-            key: "X-Content-Type-Options",
-            value: "nosniff",
-          },
-          {
-            key: "Referrer-Policy",
-            value: "strict-origin-when-cross-origin",
-          },
-          {
-            key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
-          },
-        ],
-      },
-    ];
-  },
-
-  // Environment variables validation
+  // Environment variables
   env: {
+    NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'https://sentiment-analysis-api-1.azurewebsites.net',
     CUSTOM_KEY: process.env.CUSTOM_KEY,
   },
 
@@ -81,12 +38,54 @@ const nextConfig: NextConfig = {
     ignoreDuringBuilds: true,
   },
 
-  // Output config for deployment
-  ...(process.env.AZURE_DEPLOYMENT === 'true' && { output: 'standalone' }),
+  // Performance optimizations
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "@radix-ui/react-icons",
+      "@tremor/react",
+      "framer-motion",
+      "recharts"
+    ],
+    // Only enable scrollRestoration if not static export
+    ...((!isAzureStaticWebApps) && { scrollRestoration: true })
+  },
+
+  // Compression
+  compress: true,
+
+  // Only add headers for non-static builds
+  ...(!isAzureStaticWebApps && {
+    async headers() {
+      return [
+        {
+          source: "/(.*)",
+          headers: [
+            {
+              key: "X-Frame-Options",
+              value: "DENY",
+            },
+            {
+              key: "X-Content-Type-Options",
+              value: "nosniff",
+            },
+            {
+              key: "Referrer-Policy",
+              value: "strict-origin-when-cross-origin",
+            },
+            {
+              key: "Permissions-Policy",
+              value: "camera=(), microphone=(), geolocation=()",
+            },
+          ],
+        },
+      ];
+    },
+  }),
 
   // Webpack customization
   webpack: (config, { dev, isServer }) => {
-    // Optimize bundle size
+    // Optimize bundle size for production
     if (!dev && !isServer) {
       config.optimization.splitChunks = {
         chunks: "all",
@@ -114,7 +113,7 @@ const nextConfig: NextConfig = {
           charts: {
             name: "charts",
             chunks: "all",
-            test: /[\\/]node_modules[\\/](recharts|d3|@tremor\/react)[\\/]/,
+            test: /[\\/]node_modules[\\/](recharts|d3|@tremor\\/react)[\\/]/,
             priority: 25,
           },
         },
