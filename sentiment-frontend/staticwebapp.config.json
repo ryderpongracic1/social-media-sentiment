@@ -82,7 +82,7 @@
     }
   },
   "forwardingGateway": {
-    "allowedForwardedHosts": ["localhost:3000"],
+    "allowedForwardedHosts": ["jolly-hill-0777e4f0f.2.azurestaticapps.net"],
     "requiredHeaders": {
       "X-Azure-FDID": "your-front-door-id"
     }
