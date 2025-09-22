@@ -4,34 +4,61 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'sentiment-frontend/**'
+      - '.github/workflows/azure-static-web-apps-jolly-hill-0777e4f0f.yml'
   pull_request:
     types: [opened, synchronize, reopened, closed]
     branches:
       - main
+    paths:
+      - 'sentiment-frontend/**'
+  workflow_dispatch:
 
 jobs:
   build_and_deploy_job:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.action != 'closed')
     runs-on: ubuntu-latest
     name: Build and Deploy Job
+    environment: production
+    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           submodules: true
           lfs: false
+          
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          cache-dependency-path: './sentiment-frontend/package-lock.json'
+          
+      - name: Install dependencies
+        run: |
+          cd sentiment-frontend
+          npm ci
+          
+      - name: Build application
+        run: |
+          cd sentiment-frontend
+          npm run build
+        env:
+          NODE_ENV: production
+          NEXT_PUBLIC_API_URL: https://sentiment-analysis-api-1.azurewebsites.net
+          
       - name: Build And Deploy
         id: builddeploy
         uses: Azure/static-web-apps-deploy@v1
         with:
           azure_static_web_apps_api_token: ${{ secrets.AZURE_STATIC_WEB_APPS_API_TOKEN_JOLLY_HILL_0777E4F0F }}
-          repo_token: ${{ secrets.GITHUB_TOKEN }} # Used for Github integrations (i.e. PR comments)
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
           action: "upload"
-          ###### Repository/Build Configurations - These values can be configured to match your app requirements. ######
-          # For more information regarding Static Web App workflow configurations, please visit: https://aka.ms/swaworkflowconfig
-          app_location: "./sentiment-frontend" # App source code path
-          api_location: "api" # Api source code path - optional
-          output_location: ".next" # Built app content directory - optional
-          ###### End of Repository/Build Configurations ######
+          app_location: "./sentiment-frontend"
+          api_location: "" # No API for static web apps
+          output_location: ".next"
+          skip_app_build: true # We already built it
 
   close_pull_request_job:
     if: github.event_name == 'pull_request' && github.event.action == 'closed'
