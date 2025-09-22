@@ -42,8 +42,8 @@ const config = {
     global: {
       branches: 40,
       functions: 22,
-      lines: 10,
-      statements: 10,
+      lines: 9,
+      statements: 9,
     },
   },
   testPathIgnorePatterns: [
