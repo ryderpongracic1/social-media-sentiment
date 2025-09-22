@@ -36,6 +36,7 @@ export const useThrottle = <T extends (...args: unknown[]) => unknown>(
         lastRun.current = Date.now();
         return result;
       }
+      return undefined as unknown as ReturnType<T>;
     }) as T,
     [callback, delay]
   );
