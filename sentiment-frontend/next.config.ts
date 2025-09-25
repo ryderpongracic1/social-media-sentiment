@@ -33,7 +33,7 @@ const nextConfig: NextConfig = {
     ignoreBuildErrors: false,
   },
 
-  // ESLint config
+  // ESLint config - be more lenient during build to prevent failures
   eslint: {
     ignoreDuringBuilds: true,
   },
@@ -47,8 +47,6 @@ const nextConfig: NextConfig = {
       "framer-motion",
       "recharts"
     ],
-    // Only enable scrollRestoration if not static export
-    ...((!isAzureStaticWebApps) && { scrollRestoration: true })
   },
 
   // Compression
@@ -87,41 +85,43 @@ const nextConfig: NextConfig = {
   webpack: (config, { dev, isServer }) => {
     // Optimize bundle size for production
     if (!dev && !isServer) {
-      config.optimization.splitChunks = {
-        chunks: "all",
-        cacheGroups: {
-          default: false,
-          vendors: false,
-          vendor: {
-            name: "vendor",
-            chunks: "all",
-            test: /node_modules/,
-            priority: 20,
-          },
-          common: {
-            name: "common",
-            minChunks: 2,
-            priority: 10,
-            reuseExistingChunk: true,
-          },
-          react: {
-            name: "react",
-            chunks: "all",
-            test: /[\\/]node_modules[\\/](react|react-dom)[\\/]/,
-            priority: 30,
-          },
-          charts: {
-            name: "charts",
-            chunks: "all",
-            test: /[\\/]node_modules[\\/](recharts|d3|@tremor\\/react)[\\/]/,
-            priority: 25,
+      config.optimization = {
+        ...config.optimization,
+        splitChunks: {
+          chunks: "all",
+          cacheGroups: {
+            default: false,
+            vendors: false,
+            vendor: {
+              name: "vendor",
+              chunks: "all",
+              test: /node_modules/,
+              priority: 20,
+            },
+            common: {
+              name: "common",
+              minChunks: 2,
+              priority: 10,
+              reuseExistingChunk: true,
+            },
+            react: {
+              name: "react",
+              chunks: "all",
+              test: /[\\\/]node_modules[\\\/](react|react-dom)[\\\/]/,
+              priority: 30,
+            },
+            charts: {
+              name: "charts",
+              chunks: "all",
+              test: /[\\\/]node_modules[\\\/](recharts|d3|@tremor\\/react)[\\\/]/,
+              priority: 25,
+            },
           },
         },
+        // Tree shaking optimization
+        usedExports: true,
+        sideEffects: false,
       };
-
-      // Tree shaking optimization
-      config.optimization.usedExports = true;
-      config.optimization.sideEffects = false;
     }
 
     return config;
