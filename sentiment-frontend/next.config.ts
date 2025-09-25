@@ -5,7 +5,7 @@ const isAzureStaticWebApps = process.env.NODE_ENV === 'production';
 
 const nextConfig: NextConfig = {
   // Static export configuration for Azure Static Web Apps
-  output: isAzureStaticWebApps ? 'export' : undefined,
+  ...(isAzureStaticWebApps && { output: 'export' }),
   
   // Disable features incompatible with static export
   trailingSlash: true,
@@ -113,7 +113,7 @@ const nextConfig: NextConfig = {
             charts: {
               name: "charts",
               chunks: "all",
-              test: /[\\\/]node_modules[\\\/](recharts|d3|@tremor\\/react)[\\\/]/,
+              test: /[\/]node_modules[\/](recharts|d3|@tremor\/react)[\/]/,
               priority: 25,
             },
           },
