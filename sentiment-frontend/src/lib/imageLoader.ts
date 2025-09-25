@@ -1,7 +1,7 @@
 // Custom image loader for Azure Static Web Apps
 // This loader handles image optimization for static exports
 
-import { ImageLoaderProps } from 'next/image';
+import type { ImageLoaderProps } from 'next/image';
 
 interface CustomImageLoaderProps extends ImageLoaderProps {
   src: string;
