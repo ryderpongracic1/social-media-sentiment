@@ -21,7 +21,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Build and Deploy Job
     environment: production
-    timeout-minutes: 30
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
         with:
@@ -35,15 +35,46 @@ jobs:
           cache: 'npm'
           cache-dependency-path: './sentiment-frontend/package-lock.json'
           
-      - name: Install dependencies and build
+      - name: Verify TypeScript installation
         run: |
           cd sentiment-frontend
-          npm ci --prefer-offline --no-audit
+          echo "Checking package.json for TypeScript..."
+          grep -E '"typescript"' package.json || echo "TypeScript not found in package.json"
+          
+      - name: Clean install dependencies
+        run: |
+          cd sentiment-frontend
+          # Clear npm cache to avoid any corruption
+          npm cache clean --force
+          # Remove existing node_modules and lock file if they exist
+          rm -rf node_modules package-lock.json
+          # Install dependencies
+          npm install
+          
+      - name: Verify TypeScript after install
+        run: |
+          cd sentiment-frontend
+          npx tsc --version
+          echo "TypeScript installed successfully"
+          
+      - name: Build application
+        run: |
+          cd sentiment-frontend
           npm run build
         env:
           NODE_ENV: production
           NEXT_PUBLIC_API_URL: https://sentiment-analysis-api-1.azurewebsites.net
           CI: true
+          # Disable Next.js telemetry for CI builds
+          NEXT_TELEMETRY_DISABLED: 1
+          
+      - name: Verify build output
+        run: |
+          cd sentiment-frontend
+          echo "Build completed. Checking output directory..."
+          ls -la out/ || echo "No 'out' directory found"
+          ls -la .next/ || echo "No '.next' directory found"
+          echo "Build verification complete."
           
       - name: Deploy to Azure Static Web Apps
         id: builddeploy
@@ -54,7 +85,7 @@ jobs:
           action: "upload"
           app_location: "./sentiment-frontend"
           api_location: "" # No API for static web apps
-          output_location: ".next"
+          output_location: "out" # Use 'out' directory for static export
           skip_app_build: true # We already built it above
           production_branch: "main"
 
