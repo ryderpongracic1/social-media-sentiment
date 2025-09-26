@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 
 export const dynamic = "force-static"; // Required for static export
+export const revalidate = 0; // Revalidate every 0 seconds for static export compatibility
 
 export function GET() {
   try {
