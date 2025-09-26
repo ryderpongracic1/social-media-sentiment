@@ -9,6 +9,7 @@ const nextConfig: NextConfig = {
   
   // Disable features incompatible with static export
   trailingSlash: true,
+  transpilePackages: ['@/components/ui'], // Add this line to transpile UI components
   
   // Image optimization for static export
   images: {
