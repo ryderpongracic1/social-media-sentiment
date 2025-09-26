@@ -1,5 +1,7 @@
 import { NextResponse } from 'next/server';
 
+export const dynamic = "force-static"; // Required for static export
+
 export function GET() {
   try {
     return NextResponse.json(
