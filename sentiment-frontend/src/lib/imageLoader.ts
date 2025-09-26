@@ -9,7 +9,7 @@ interface CustomImageLoaderProps extends ImageLoaderProps {
   quality?: number;
 }
 
-export default function customImageLoader({ src, width, quality }: CustomImageLoaderProps): string {
+export default function customImageLoader({ src, width: _width, quality: _quality }: CustomImageLoaderProps): string {
   // For Azure Static Web Apps, we serve images as-is since they're static
   // In a production environment, you might want to use Azure CDN or other image optimization services
   
