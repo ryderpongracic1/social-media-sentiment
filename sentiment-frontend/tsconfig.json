@@ -16,7 +16,7 @@
     "incremental": true,
     "forceConsistentCasingInFileNames": true,
     "allowSyntheticDefaultImports": true,
-    "verbatimModuleSyntax": true,
+    "verbatimModuleSyntax": false,
     
     // Strict type-checking options
     "noImplicitAny": true,
